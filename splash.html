@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>フリーWi-Fi ポータル</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #F0F4F8;
+    --surface:   #FFFFFF;
+    --border:    #D6E0EC;
+    --text-main: #1A2332;
+    --text-sub:  #4A5C72;
+    --text-tos:  #334155;
+    --accent:    #1A56DB;
+    --accent-dk: #1140A8;
+    --accent-bg: #EBF1FD;
+    --radius-lg: 16px;
+    --radius-md: 10px;
+    --radius-sm: 6px;
+  }
+
+  html, body {
+    min-height: 100%;
+    background: var(--bg);
+    font-family: 'Helvetica Neue', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN',
+                 'Noto Sans JP', 'Yu Gothic', sans-serif;
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 40px;
+  }
+
+  /* ── Header ── */
+  .header {
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    padding: 36px 24px 28px;
+  }
+
+  .wifi-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: var(--accent-bg);
+    border-radius: 50%;
+    margin-bottom: 18px;
+  }
+
+  .header h1 {
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+    color: var(--text-main);
+  }
+
+  .header p {
+    margin-top: 8px;
+    font-size: 0.88rem;
+    color: var(--text-sub);
+    line-height: 1.6;
+  }
+
+  /* ── Card ── */
+  .card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(26,83,219,0.06), 0 1px 3px rgba(0,0,0,0.05);
+  }
+
+  /* ── ToS header ── */
+  .tos-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 18px 20px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tos-header svg {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+  }
+
+  .tos-header span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-sub);
+  }
+
+  /* ── ToS box ── */
+  .tos-box {
+    height: 280px;
+    overflow-y: auto;
+    padding: 16px 20px;
+    font-size: 0.82rem;
+    line-height: 1.75;
+    color: var(--text-tos);
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .tos-box::-webkit-scrollbar { width: 4px; }
+  .tos-box::-webkit-scrollbar-track { background: transparent; }
+  .tos-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .tos-box h2 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin-top: 16px;
+    margin-bottom: 4px;
+    color: var(--text-main);
+  }
+
+  .tos-box h2:first-child { margin-top: 0; }
+  .tos-box p { margin-bottom: 8px; }
+
+  .tos-box ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 8px;
+  }
+
+  .tos-box ul li {
+    position: relative;
+    padding-left: 1.1em;
+    margin-bottom: 3px;
+  }
+
+  .tos-box ul li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ── フォームエリア ── */
+  .form-area {
+    padding: 16px 20px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--accent-bg);
+  }
+
+  /* ── チェックボックス ── */
+  #accept-terms {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--accent);
+    vertical-align: middle;
+    margin-right: 8px;
+    margin-bottom: 16px;
+  }
+
+  .checkbox-label {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-main);
+    cursor: pointer;
+    line-height: 1.4;
+    vertical-align: middle;
+    display: inline-block;
+    margin-bottom: 16px;
+  }
+
+  /* ── 接続ボタン ── */
+  .connect-btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-align: center;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .connect-btn:active {
+    background: var(--accent-dk);
+  }
+
+  /* ── CSS制御：未チェック時はボタンを無効表示・クリック不可 ── */
+  /* チェックボックスとボタンが同じform内の兄弟要素である必要あり */
+  #accept-terms:not(:checked) ~ .connect-btn {
+    background: #B0BEC8;
+    pointer-events: none;
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="header">
+  <div class="wifi-icon">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M1.5 8.5a16.5 16.5 0 0 1 21 0M5 12a12 12 0 0 1 14 0M8.5 15.5a7 7 0 0 1 7 0M12 19.5h.01"
+            stroke="#1A56DB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+  </div>
+  <h1>フリーWi-Fiへ<br>ようこそ</h1>
+  <p>ご利用の前に、以下の利用規約をお読みいただき、<br>同意のうえ接続してください。</p>
+</div>
+
+<!-- ── Card ── -->
+<div class="card">
+
+  <!-- ToS header -->
+  <div class="tos-header">
+    <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+      <path stroke="#4A5C72" stroke-width="1.5" stroke-linecap="round" fill="none"
+            d="M9 2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5M13 2l5 5M13 2v5h5M7 9h4M7 13h6"/>
+    </svg>
+    <span>利用規約（Terms of Service）</span>
+  </div>
+
+  <!-- ToS body -->
+  <div class="tos-box">
+
+    <h2>第1条　サービスの概要</h2>
+    <p>本フリーWi-Fiサービス（以下「本サービス」といいます）は、当施設が来訪者・利用者の利便性向上を目的として無償で提供するインターネット接続サービスです。本サービスを利用することにより、利用者は本規約のすべての条項に同意したものとみなします。</p>
+
+    <h2>第2条　免責事項</h2>
+    <p>当社・当施設は、本サービスの利用に起因または関連して発生した以下の事項について、一切の責任を負いません。</p>
+    <ul>
+      <li>通信の遅延・切断・障害による損害およびデータの損失・破損</li>
+      <li>第三者による不正アクセス、情報の傍受、ウイルス感染等によって生じた損害</li>
+      <li>本サービスを通じて取得・閲覧したコンテンツの正確性・完全性に起因する損害</li>
+      <li>本サービスの提供停止・変更・終了によって生じた損害</li>
+      <li>その他、本サービスの利用に関連して生じた一切の損害</li>
+    </ul>
+    <p>通信内容のセキュリティ保護については、ご利用者自身の責任においてVPN等の手段を講じてください。</p>
+
+    <h2>第3条　禁止事項</h2>
+    <p>利用者は、本サービスを利用するにあたり、以下の行為を行ってはなりません。</p>
+    <ul>
+      <li>法令または公序良俗に違反する行為</li>
+      <li>著作権・商標権その他の知的財産権を侵害する行為</li>
+      <li>不正アクセス、DoS攻撃、スパムメールの送信その他ネットワークに過度の負荷をかける行為</li>
+      <li>他の利用者または第三者のプライバシーを侵害し、または誹謗中傷する行為</li>
+      <li>違法薬物・詐欺・わいせつコンテンツ等の違法な情報の収集・配布</li>
+      <li>商業目的での大容量通信、動画配信サービスの長時間利用など、他の利用者の通信を著しく妨げる行為</li>
+      <li>当施設のネットワーク機器・システムへの無断アクセスや改ざん</li>
+      <li>その他、当社・当施設が不適切と判断する行為</li>
+    </ul>
+
+    <h2>第4条　通信の記録</h2>
+    <p>本サービスでは、不正利用の防止および法令に基づく対応のため、接続日時・MACアドレス・IPアドレス等の通信ログを記録・保管する場合があります。これらの情報は、法令の定める場合または当局からの要請があった場合に開示されることがあります。</p>
+
+    <h2>第5条　サービスの変更・停止</h2>
+    <p>当社・当施設は、設備の保守・点検、緊急事態その他やむを得ない事由により、予告なく本サービスを変更・停止・終了することがあります。これにより生じた損害について、当社・当施設は責任を負いません。</p>
+
+    <h2>第6条　規約の変更</h2>
+    <p>当社・当施設は、必要に応じて本規約を予告なく変更することができます。変更後も本サービスを継続して利用した場合、変更後の規約に同意したものとみなします。</p>
+
+    <h2>第7条　準拠法・管轄</h2>
+    <p>本規約の解釈および適用は日本法に準拠します。本規約に関する紛争については、当施設の所在地を管轄する裁判所を専属的合意管轄裁判所とします。</p>
+
+  </div><!-- /tos-box -->
+
+  <!-- ── フォームエリア（openNDS最新仕様・JS不使用） ── -->
+  <div class="form-area">
+    <form method="GET" action="$authaction">
+      <input type="hidden" name="tok" value="$tok">
+      <input type="hidden" name="redir" value="$redir">
+
+      <!-- チェックボックスとボタンを直接の兄弟要素に並べてCSS制御 -->
+      <input type="checkbox" id="accept-terms">
+      <label class="checkbox-label" for="accept-terms">利用規約の内容に同意します</label>
+
+      <!-- id="connect-btn" はopenNDS必須 -->
+      <button type="submit" id="connect-btn" class="connect-btn">
+        インターネットに接続する
+      </button>
+    </form>
+  </div>
+
+</div><!-- /card -->
+
+<!-- ── Footer ── -->
+<div class="footer">
+  <p>&copy; 2026 Office Free Wi-Fi Service. All Rights Reserved.</p>
+</div>
+
+</body>
+</html>
